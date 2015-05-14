@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://getbootstrap.com/favicon.ico">
+
+    <title>MTaaS</title>
+
+    <script src="/stylesheets/js/angular.min.js"></script>
+    
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/stylesheets/css/bootstrap.min.css"/>
+
+    <!-- Custom styles for this template -->
+    <link href="/stylesheets/css/dashboard.css" rel="stylesheet"/>
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]>
+    <script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="/stylesheets/js/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <link rel="stylesheet" href="/stylesheets/css/ng-table.min.css"/>
+    <script src="/stylesheets/js/ng-table.min.js"></script>
+
+
+</head>
+
+<body>
+
+<div class="container" ng-controller="signCtrl">
+	 <form>
+	    <p>Number 1: <input type="number" ng-model="num1"></p>
+	    <p>Number 2: <input type="number"  ng-model="num2"></p>
+	    <input type="submit" value="Submit" ng-click="clicker()" />
+	 </from>
+  <div id="loginbox" style="margin-top:50px;" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <div class="panel-title">Sign In</div>
+      </div>
+      <div style="padding-top:30px" class="panel-body">
+        <div style="display:none" id="login-alert" class="alert alert-danger col-sm-12"></div>
+        <form id="loginform" class="form-horizontal" role="form">
+          <div style="margin-bottom: 25px" class="input-group">
+            <span class="input-group-addon"><span class="glyphicon glyphicon-user" aria-hidden="true"></span></span>
+            <input id="email" ng-model="loginForm.email" type="email" class="form-control" name="email" value="" placeholder="email">
+          </div>
+          <div style="margin-bottom: 25px" class="input-group">
+            <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+            <input id="login-password" ng-model="loginForm.password" type="password" class="form-control" name="password" placeholder="password">
+          </div>
+          <div style="margin-top:10px" class="form-group">
+            <!-- Button -->
+            <div class="col-sm-12 controls">
+              <input type="button" name="login" value="Login" id="btn-login" class="btn btn-success" ng-click="login()">
+              <a id="btn-signup" href="#" onClick="$('#loginbox').hide(); $('#signupbox').show()" class="btn btn-primary">Sign Up</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="signupbox" style="display:none; margin-top:50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+    <div class="panel panel-info">
+      <div class="panel-heading">
+        <div class="panel-title">Sign Up</div>
+      </div>
+      <div class="panel-body">
+        <form id="signupform" class="form-horizontal" role="form">
+          <div id="signupalert" style="display:none" class="alert alert-danger">
+            <p>Error:</p>
+            <span></span>
+          </div>
+          <div class="form-group">
+            <label for="email" class="col-md-3 control-label">Email</label>
+            <div class="col-md-9">
+              <input ng-model="signupForm.email" type="email" class="form-control" name="email" placeholder="Email Address">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="firstname" class="col-md-3 control-label">First Name</label>
+            <div class="col-md-9">
+              <input ng-model="signupForm.firstname" type="text" class="form-control" name="firstname" placeholder="First Name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="lastname" class="col-md-3 control-label">Last Name</label>
+            <div class="col-md-9">
+              <input ng-model="signupForm.lastname" type="text" class="form-control" name="lastname" placeholder="Last Name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="phone" class="col-md-3 control-label">Phone</label>
+            <div class="col-md-9">
+              <input ng-model="signupForm.phone" type="text" class="form-control" name="phone" placeholder="Phone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="phone" class="col-md-3 control-label">Address</label>
+            <div class="col-md-9">
+              <input ng-model="signupForm.address" type="text" class="form-control" name="address" placeholder="Address">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="password" class="col-md-3 control-label">Password</label>
+            <div class="col-md-9">
+              <input ng-model="signupForm.password" type="password" class="form-control" name="password" placeholder="Password">
+            </div>
+          </div>
+          <div class="form-group">
+            <!-- Button -->
+            <div class="col-md-offset-3 col-md-9">
+              <input type="button" name="signup" value="Sign Up" id="btn-signup" class="btn btn-info" ng-click="signup()">
+              <button type="button" class="btn btn-danger" onclick="$('#signupbox').hide(); $('#loginbox').show()"><i class="icon-hand-right"></i>Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script type="text/javascript">
+  var app = angular.module('myApp', []);
+  app.controller('signCtrl', function($scope, $http) {
+  	$scope.clicker = function () {
+      $http({
+        method: 'GET',
+        url: '/graph',
+        params: { "book_own": $scope.num1, "book_want": $scope.num2}
+
+      }).success(function(res) {
+        alert(' success');
+      //  window.location.assign('/index');
+      });
+    };
+  
+   
+    $scope.login = function () {
+      $http({
+        method: 'GET',
+        url: '/signin',
+        params: { "username": $scope.loginForm.username, "password": $scope.loginForm.password }
+
+      }).success(function(res) {
+        alert('login success');
+        window.location.assign('/index');
+      });
+    };
+    $scope.signup = function () {
+      console.log('submit');
+      $http({
+        method: 'POST',
+        url: '/signup',
+        data: { "account": $scope.signupForm}
+
+      }).success(function(res) {
+        if(res.signup==='Success'){
+          alert('sign up success');
+          window.location.assign('/');
+        }
+      });
+    };
+
+  });
+</script>
+
+</body>
+
+</html>

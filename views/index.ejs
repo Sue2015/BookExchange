@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="http://getbootstrap.com/favicon.ico">
+
+<title>MTaaS</title>
+
+<script src="/stylesheets/js/angular.min.js"></script>
+<script src="/bower_components/Chart.js/Chart.js"></script>
+
+<script type="text/javascript" src="/vis/dist/vis.js"></script>
+
+<!-- Bootstrap core CSS -->
+<link rel="stylesheet" href="/stylesheets/css/bootstrap.min.css"/>
+<link href="/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+
+<!-- Custom styles for this template -->
+<link href="/stylesheets/css/dashboard.css" rel="stylesheet"/>
+
+<!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+<!--[if lt IE 9]>
+<script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+<script src="/stylesheets/js/ie-emulation-modes-warning.js"></script>
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+
+<link rel="stylesheet" href="/stylesheets/css/ng-table.min.css"/>
+<script src="/stylesheets/js/ng-table.min.js"></script>
+
+<style type="text/css">
+#mynetwork {
+    float: left;
+    width: 100%;
+    height: 350px;
+    border: 1px solid #d3d3d3;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+  
+  }
+</style>
+
+</head>
+
+
+<body  ng-controller="AdminCtrl">
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#"> {{user.first_name}}</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+	    <ul class="nav navbar-nav navbar-right">
+		   <li><a href ng-click="tab = 0;main()">Index</a>
+		   </li>
+		   <li><a href ng-click="tab = 1;listOwnedBooks()">Owned Books</a>
+		   </li>
+		   <li><a href ng-click="tab = 2;listWantBooks()">Want Books</a>
+		   </li>
+		   <li><a href ng-click="tab = 3;trace()">Search Exchanges</a>
+		   </li>
+	       <li><a href ng-click="logout()"><span class='glyphicon glyphicon-log-out'></span> Log Out</a></li> 
+	     </ul>
+      <!--<form class="navbar-form navbar-right">
+          <input type="text" class="form-control" placeholder="Search...">
+        </form>-->
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar" ng-init="tab = 0">
+        <li ng-class="{ active:tab === 0 }"><a href ng-click="tab = 0;main()">Index<span class="sr-only">(current)</span></a>
+        </li>
+        <li ng-class="{ active:tab === 1 }"><a href ng-click="tab=1;listOwnedBooks()">Owned Books</a>
+        </li>
+        <li ng-class="{ active:tab === 2 }"><a href ng-click="tab = 2;listWantBooks()">Want Books</a>
+        </li>
+        <li ng-class="{ active:tab === 3 }"><a href ng-click="tab = 3;findMatch()">Search Exchanges</a>
+        </li>
+      </ul>
+    </div>
+
+
+    <div ng-show="tab === 0" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <h1 class="page-header">Welcome!</h1>
+      <table class="table">
+	      <thead>
+	        <tr>
+	          <th>{{user.first_name}}</th>
+	          <th></th>
+	        </tr>
+	      </thead>
+	        <tbody>
+		          <tr>
+		            <td>First Name:</td>
+		            <td> {{user.first_name}}</td>
+		          </tr> 
+		          <tr>
+		            <td>Last Name:</td>
+		            <td>{{user.last_name}}</td>
+		          </tr> 
+		          <tr>
+		            <td>Phone Number:</td>
+		            <td>{{user.phone}}</td>
+		          </tr> 
+		          <tr>
+		            <td>Email:</td>
+		            <td>{{user.email}}</td>
+		          </tr>        
+		          <tr>
+		            <td>Address:</td>
+		            <td>{{user.address}}</td>
+		          </tr> 
+	        </tbody>
+        </table>       
+    </div>
+
+    <div ng-show="tab === 1||tab === 2||tab === 3" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      
+      <h1 class="page-header">{{header}}<input type="button" ng-show="!showmatch"  ng-model="showButton" value="Create" class="btn btn-sm btn-primary navbar-right" ng-click="showCreateOwnOrWantBook()"></h1>
+      <div ng-show="showmatch">
+	      <label>Name: <input ng-model="search_match.name"></label> <label>Version: <input ng-model="search_match.version"></label> <label>Author: <input ng-model="search_match.author"></label>
+	      <table ng-table="sepicfy_own_Books"  class="table">
+	            <tr ng-repeat="book in sepicfy_own_Books_data | filter:search_match:strict">
+	                <td data-title="'Book ID'">
+	                    {{book.book_id}}
+	                </td>
+	                <td data-title="'Book Name'">
+	                    {{book.name}}
+	                </td>
+	                <td data-title="'Version'">
+	                	{{book.version}}
+	                </td>
+	                <td data-title="'Author'">
+	            		{{book.author}}
+	            	</td>
+	            	
+	                <td>
+	                	<input type="button" class='btn btn-primary btn-xs' value="select" ng-click="specifyBook(book)">  
+	                </td>
+	            </tr>
+	        </table>
+	       <h4>Your specified given book {{specifiedbook.book_id}}: &nbsp{{specifiedbook.name}} </h4>
+	       <br/>
+	  </div>
+      
+      <label>Name: <input ng-model="search.name"></label> <label>Version: <input ng-model="search.version"></label> <label>Author: <input ng-model="search.author"></label>
+      <table ng-table="tableBooks"  class="table">
+            <tr ng-repeat="book in Books_data | filter:search:strict">
+                <td data-title="'Book ID'">
+                    {{book.book_id}}
+                </td>
+                <td data-title="'Book Name'">
+                    {{book.name}}
+                </td>
+                <td data-title="'Version'">
+                	{{book.version}}
+                </td>
+                <td data-title="'Author'">
+            		{{book.author}}
+            	</td>
+                <td>
+                    <a  ng-show="!showmatch" ng-click="viewEditBook(book)"><span class="glyphicon glyphicon-pencil"></span></a>  
+                    
+                </td>
+           
+                <td>
+                    <a  ng-show="!showmatch"  ng-click="deleteBook(book)"><span class="glyphicon glyphicon-remove"></span></a>  
+
+                </td>
+                <td ng-show="showmatch" >
+                	<a ng-click="macthBook(book)"><span class="glyphicon glyphicon-search"></span></a>  
+                </td>
+            </tr>
+        </table>
+        
+        <div ng-show="bookDetail" >
+	        <table class="table">
+	           <thead>
+		          <tr>
+		            <th>Book:{{book.book_id}}</th>
+		            <th></th>
+		            <th></th>
+		            <th><input type="button"  value="Clear" class="btn btn-sm btn-primary navbar-right" ng-click="ClearFilterBook()">
+		            </th>
+		          </tr>
+		       
+		        </thead>
+		          <tbody>
+			          <tr>
+			            <td>Book Name:<input type="text" ng-model=book.name></td>
+			           
+			            <td>Version:<input type="text" ng-model=book.version></td>
+			        
+			            <td>Author:<input type="text" ng-model=book.author></td>
+			            
+			            <td><input type="button"  value="Save" class="btn btn-sm btn-primary navbar-right" ng-click="createOwnOrWantBook(book)">
+			            </td>
+			            
+			          </tr> 
+			    
+		          </tbody>
+		       </table>
+		       
+		       <table ng-table="dbBooksTable"  class="table">
+	            <tr ng-repeat="dbbook in dbBooks_data | filter:book:strict">
+	                <td data-title="'Book ID'">
+	                    {{dbbook.id}}
+	                </td>
+	                <td data-title="'Book Name'">
+	                    {{dbbook.name}}
+	                </td>
+	                <td data-title="'Version'">
+	                	{{dbbook.version}}
+	                </td>
+	                <td data-title="'Author'">
+	            		{{dbbook.author}}
+	            	</td>
+	            	<td>
+	            
+	            	<td>
+	            		<input type="button" class="btn btn-primary btn-xs" ng-click="selectBook(dbbook)" value="select"></td>
+                    </td>
+	            </tr>
+	           </table>
+		       
+		</div>
+		<h4>{{result}}</h4>
+		<div ng-show='circle' id="mynetwork"></div>
+		<div ng-show='circle'>
+			
+			<h4>Exchange Details: </h4>
+			
+			<div class="panel panel-default" ng-repeat="edge in book_edge" >
+				<table  border="1" class="table">
+					<tr>
+						<td>
+							<table  class="table">
+								<tr>
+									<td>{{user_node[$index][0].first_name}}&nbsp{{user_node[$index][0].last_name}}	</td>
+								</tr>
+								<tr>
+									<td>Phone: {{user_node[$index][0].phone}}	</td>
+								</tr>
+								<tr>
+									<td>Email: {{user_node[$index][0].email}}	</td>
+								</tr>
+							</table>
+							
+						</td>
+						
+						<td>
+							<table   class="table">
+								<tr>
+									<th></th>
+									<th>name</th>
+									<th>version</th> 
+									<th>author</th>
+								</tr>
+								
+								<tr ng-repeat="book in edge">
+									<td><span class='glyphicon glyphicon-flag'></span></td>	
+									<td>{{book.name}}</td>	
+									<td>{{book.version}}</td>
+									<td>{{book.author}}</td>
+								</tr>
+								
+							</table>
+						
+						</td>
+						
+							
+					</tr>
+					
+					<tr><td><span  class='glyphicon glyphicon-arrow-down'></span></td></tr>
+					
+				</table>	
+				
+				
+			</div>
+				
+		</div>
+     
+    </div>
+
+   
+    <div ng-show="tab === 3" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+      
+    </div>
+
+
+   
+  </div>
+</div>
+
+
+<script>
+  var app = angular.module('myApp', ['ngTable']);
+  app.controller('AdminCtrl', function($scope,$http,$filter, ngTableParams) {
+	    var loadMain=function(){
+	    	$http.get('/loadProfile').success(function(res) {
+				$scope.user=res.user;		
+			});	
+	    }
+	    var loadBooks=function(){
+			$http({
+		          method: 'GET',
+		          url: '/getOwnOrWantBooks',
+		          params: { "type":$scope.header}
+
+			}).success(function(res) {
+		        	//alert(JSON.stringify(res));
+		        	$scope.Books_data=res.books;
+			        $scope.tableBooks = new ngTableParams({
+				        page: 1,            // show first page
+				        count: 10,          // count per page
+				       
+			    	}, {
+				        total: $scope.Books_data.length, // length of data
+				        getData: function($defer, params) {
+				            // use build-in angular filter
+				            $defer.resolve($scope.Books_data.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+				        }
+			   	 });
+			});
+		}	
+		loadMain();		
+		$scope.main=function(){
+			loadMain();			
+		};
+		
+		$scope.logout=function(){
+			$http.post('/logout').success(function(res) {
+				if(res.logout==='yes')
+					window.location.assign('/');		
+			});			
+		};
+		
+		$scope.listOwnedBooks=function(){
+			$scope.showmatch=0;
+			
+			$scope.bookDetail=0;
+			$scope.circle=0;
+		//	$scope.own=1;
+			$scope.header='Own Books';
+			
+	
+			
+			loadBooks();
+		
+			$scope.viewEditBook=function(book){
+				$scope.bookDetail=1;
+				$scope.circle=0;
+				
+				$http.get('/getDbBooks').success(function(res) {
+					$scope.dbBooks_data=res.books;	
+					$scope.dbBooksTable = new ngTableParams({
+				        page: 1,            // show first page
+				        count: 10,          // count per page
+				       
+			    	}, {
+				        total: $scope.dbBooks_data.length, // length of data
+				        getData: function($defer, params) {
+				            // use build-in angular filter
+				            $defer.resolve($scope.dbBooks_data.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+				        }
+			   	 });
+				});	
+				
+				$scope.book=book;
+				$scope.bookBeforeEdit=book;
+			};
+			
+			$scope.showCreateOwnOrWantBook=function(book){
+				$scope.bookDetail=1;
+				$scope.circle=0;
+				$scope.book=[];
+				
+				$http.get('/getDbBooks').success(function(res) {
+					$scope.dbBooks_data=res.books;	
+					$scope.dbBooksTable = new ngTableParams({
+				        page: 1,            // show first page
+				        count: 10,          // count per page
+				       
+			    	}, {
+				        total: $scope.dbBooks_data.length, // length of data
+				        getData: function($defer, params) {
+				            // use build-in angular filter
+				            $defer.resolve($scope.dbBooks_data.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+				        }
+			   	 });
+				});	
+				
+			};
+			
+			$scope.selectBook=function(book){
+				$scope.book=book;
+				
+			};
+			$scope.ClearFilterBook=function(book){
+				$scope.book=[];
+				
+			};
+			
+			
+			$scope.createOwnOrWantBook=function(book){
+				//alert(book.book_id);
+				if(book.book_id!=null){
+					
+					//if($scope.bookBeforeEdit===book){
+						//alert("no change for this book!");
+					//}else{
+						$http({
+					          method: 'POST',
+					          url: '/editOwnOrWantBook',
+					          data: {"type":$scope.header,"book":book}
+	
+						}).success(function(res) {
+							//alert('yes');
+							if(res.edit==='success')
+								loadBooks();
+						});
+					//}
+				}else{
+					$http({
+				          method: 'POST',
+				          url: '/createOwnOrWantBook',
+				          data: {"type":$scope.header,"book":book}
+
+					}).success(function(res) {
+						//alert('yes');
+						if(res.create==='success')
+							loadBooks();
+					});
+					
+				}
+				
+			};
+			
+			$scope.deleteBook=function(book){
+				//alert(book.id+" "+book.book_id);
+		   		if(confirm("Delete : "+book.name+"?")){
+		   			$http({
+				          method: 'post',
+				          url: '/deleteOwnOrWantBook',
+				          data: {"type":$scope.header,"book":book}
+
+	        		}).success(function(res) {
+	        			if(res.delet==='success'){
+	        				alert("Delete Success!");
+	        				loadBooks();
+	        			}else{
+	        				alert("Delete Failed!");
+	        			
+	        			}		            
+			        });
+			     }     		
+	 	   };
+
+			
+			
+		};
+		
+		$scope.listWantBooks=function(){
+			$scope.showmatch=0;
+			$scope.circle=0;
+			
+			$scope.bookDetail=0;
+		//	$scope.own=0;
+			$scope.header='Want Books';
+			
+			loadBooks();
+		
+		}
+		
+		
+		$scope.findMatch=function(){
+			$scope.result=""
+			$scope.showmatch=1;
+			$scope.bookDetail=0;
+			$scope.header='Find A Match';
+			$scope.specifiedbook=[];
+			
+			loadBooks();
+			
+			$http({
+		          method: 'GET',
+		          url: '/getOwnOrWantBooks',
+		          params: { "type":'Own Books'}
+
+			}).success(function(res) {
+		        	//alert(JSON.stringify(res));
+		        	$scope.sepicfy_own_Books_data=res.books;
+			        $scope.sepicfy_own_Books = new ngTableParams({
+				        page: 1,            // show first page
+				        count: 10,          // count per page
+				       
+			    	}, {
+				        total: $scope.sepicfy_own_Books_data.length, // length of data
+				        getData: function($defer, params) {
+				            // use build-in angular filter
+				            $defer.resolve($scope.sepicfy_own_Books_data.slice((params.page() - 1) * params.count(), params.page() * params.count()));
+				        }
+			   	 });
+			});
+			$scope.specifyBook=function(book){
+				$scope.specifiedbook=book;
+			}
+			
+			$scope.macthBook=function(book){
+				//var network
+				
+				$scope.bookDetail=0;
+				$scope.result='';
+				//alert($scope.specifiedbook);
+				$http({
+			          method: 'GET',
+			          url: '/match',
+			          params: {'want_book_id':book.book_id,'own_book_id':$scope.specifiedbook.book_id}
+
+				}).success(function(res) {
+					//alert(JSON.stringify(res));
+					if(res.result=='no'){
+						$scope.result='Sorry! There is no circled exchange yet!';
+					}else{
+						
+						$scope.user_node=res.user_node;
+						$scope.book_edge=res.book_edge;
+						var nodes=[],edges=[];
+						var value='digraph {node[shape=circle fontSize=16]; edge[length=100, color=gray, fontColor=black];';
+					//	alert(($scope.user_node.length-1));
+						for(i=0;i<($scope.user_node.length-1);i++){
+							//alert($scope.user_node[i][0].first_name)
+							value=value+'"'+$scope.user_node[i][0].first_name+'"->"'+$scope.user_node[i+1][0].first_name+'"[label="';
+							value=value+$scope.book_edge[i].length;
+							//for(j=0;j<$scope.book_edge[i].length;j++){
+							//	alert($scope.book_edge[i][j].name);
+								//value=value+' '+$scope.book_edge[i][j].name;
+							//}
+							value=value+'books"];';
+							
+							//nodes.push({id: $scope.user_node[i].id, label: $scope.user_node[i].first_name+" "+$scope.user_node[i].last_name});
+							//edges.push({from: $scope.user_node[i].id, to:  $scope.user_node[i+1].id});
+						}
+						value=value+'"'+$scope.user_node[i][0].first_name+'"'+'[fontColor=white,color=red,]}';
+						//alert(value);
+						//var value="dinetwork {node[shape=circle]; 1 -> 1 -> 2; 2 -> 3; 2 -- 4; 2 -> 1 }";
+								           // create a network
+						var container = document.getElementById('mynetwork');
+						var data={dot: value};
+						/*var data= {
+						             nodes: nodes,
+						             edges: edges,
+						      };*/
+						var options = {
+								
+						};
+						network = new vis.Network(container, data,options);
+						$scope.circle=1;
+					}
+		      			     
+			      });
+					
+			};
+						
+		}
+    
+  });
+</script>
+
+
+<!-- Bootstrap core JavaScript
+  ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="/stylesheets/js/jquery.min.js"></script>
+<script src="/stylesheets/js/bootstrap.min.js"></script>
+<!-- Just to make our placeholder images work. Don't actually copy the next line! -->
+<script src="/stylesheets/js/holder.js"></script>
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="/stylesheets/js/ie10-viewport-bug-workaround.js"></script>
+
+</body>
+
+</html>
