@@ -1,4 +1,6 @@
-# SJSU Book Exchange Platform: help sjsu students to find mutual and circled needs of book exchange
+# SJSU Book Exchange Platform
+
+help sjsu students to find mutual and circled needs of book exchange
 
 cloud entry: http://bookexchange272-sjsucmpe272.rhcloud.com/
 
